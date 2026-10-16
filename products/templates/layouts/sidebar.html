@@ -3,9 +3,15 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
 
   <!-- begin::Sidebar Brand -->
-  <div class="sidebar-brand">
-    <a href="{% url 'dashboard' %}" class="brand-link d-flex align-items-center px-3 py-2">
-      Media Track
+  <div class="sidebar-brand py-3 border-bottom border-secondary border-opacity-25">
+    <a href="{% url 'dashboard' %}" class="brand-link d-flex align-items-center gap-2 px-3 py-1 text-decoration-none">
+      <span class="badge bg-primary fs-6 p-2 rounded-3 shadow-sm">
+        <i class="bi bi-broadcast-pin"></i>
+      </span>
+      <div>
+        <div class="fw-bold fs-6 lh-sm text-light tracking-wide">MEDIA TRACK</div>
+        <small class="text-secondary text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">MING MEDIA OPS</small>
+      </div>
     </a>
   </div>
   <!-- end::Sidebar Brand -->
@@ -14,78 +20,45 @@
   <div class="sidebar-wrapper">
     <nav class="mt-2">
       <!-- begin::Sidebar Menu -->
-      <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation"
-        data-accordion="false">
+      <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" aria-label="Main navigation" data-accordion="false">
 
         <!-- Dashboard -->
         <li class="nav-item">
-          <a href="{% url 'dashboard' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
             <i class="nav-icon bi bi-speedometer2"></i>
             <p>Dashboard</p>
           </a>
         </li>
 
         <li class="nav-item">
-          <a href="{% url 'notification_list' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
+          <a href="{% url 'notification_list' %}" class="nav-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
             <i class="nav-icon bi bi-bell"></i>
             <p>Notifications</p>
           </a>
         </li>
 
-        
-        <!-- Documentation Requests -->
-        <li class="nav-header">SERVICES</li>
+        <!-- Services Section -->
+        <li class="nav-header text-uppercase text-secondary small fw-bold mt-2">SERVICES &amp; OPERATIONS</li>
 
-        <li
-          class="nav-item {% if request.resolver_match.url_name in 'doc_request_list,doc_request_create,doc_request_detail,doc_request_delete' %}menu-open{% endif %}">
-          <a href="#"
-            class="nav-link {% if request.resolver_match.url_name in 'doc_request_list,doc_request_create,doc_request_detail,doc_request_delete' %}active{% endif %}">
+        <!-- Documentation Requests (Direct Link, No Single-Item Dropdown Clutter) -->
+        <li class="nav-item">
+          <a href="{% url 'doc_request_list' %}" class="nav-link {% if request.resolver_match.url_name in 'doc_request_list,doc_request_create,doc_request_edit,doc_request_detail,doc_request_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-camera-video"></i>
-            <p>
-              Doc Requests
-              <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
+            <p>Doc Requests</p>
           </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="{% url 'doc_request_list' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'doc_request_list' %}active{% endif %}">
-                <i class="nav-icon bi bi-list-ul"></i>
-                <p>All Requests</p>
-              </a>
-            </li>
-          </ul>
         </li>
 
-        <!-- Maintenance & Troubleshoot LED -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name in 'maint_request_list,maint_request_create,maint_request_detail,maint_request_delete' %}menu-open{% endif %}">
-          <a href="#"
-            class="nav-link {% if request.resolver_match.url_name in 'maint_request_list,maint_request_create,maint_request_detail,maint_request_delete' %}active{% endif %}">
+        <!-- Maintenance & Troubleshoot LED (Direct Link) -->
+        <li class="nav-item">
+          <a href="{% url 'maint_request_list' %}" class="nav-link {% if request.resolver_match.url_name in 'maint_request_list,maint_request_create,maint_request_edit,maint_request_detail,maint_request_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-tools"></i>
-            <p>
-              Maintenance LED
-              <i class="nav-arrow bi bi-chevron-right"></i>
-            </p>
+            <p>Maintenance LED</p>
           </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="{% url 'maint_request_list' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'maint_request_list' %}active{% endif %}">
-                <i class="nav-icon bi bi-list-ul"></i>
-                <p>All Requests</p>
-              </a>
-            </li>
-          </ul>
         </li>
 
-        <!-- Jadwal Tayang -->
-        <li
-          class="nav-item {% if request.resolver_match.url_name in 'jadwal_tayang_list,jadwal_tayang_report,jadwal_tayang_create,jadwal_tayang_detail,jadwal_tayang_delete' %}menu-open{% endif %}">
-          <a href="#"
-            class="nav-link {% if request.resolver_match.url_name in 'jadwal_tayang_list,jadwal_tayang_report,jadwal_tayang_create,jadwal_tayang_detail,jadwal_tayang_delete' %}active{% endif %}">
+        <!-- Jadwal Tayang (Has Multiple Sub-Items: List + Report) -->
+        <li class="nav-item {% if request.resolver_match.url_name in 'jadwal_tayang_list,jadwal_tayang_report,jadwal_tayang_create,jadwal_tayang_edit,jadwal_tayang_detail,jadwal_tayang_delete' %}menu-open{% endif %}">
+          <a href="#" class="nav-link {% if request.resolver_match.url_name in 'jadwal_tayang_list,jadwal_tayang_report,jadwal_tayang_create,jadwal_tayang_edit,jadwal_tayang_detail,jadwal_tayang_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-calendar-event"></i>
             <p>
               Jadwal Tayang
@@ -94,15 +67,13 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{% url 'jadwal_tayang_list' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'jadwal_tayang_list' %}active{% endif %}">
+              <a href="{% url 'jadwal_tayang_list' %}" class="nav-link {% if request.resolver_match.url_name == 'jadwal_tayang_list' %}active{% endif %}">
                 <i class="nav-icon bi bi-list-ul"></i>
                 <p>All Jadwal</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'jadwal_tayang_report' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'jadwal_tayang_report' %}active{% endif %}">
+              <a href="{% url 'jadwal_tayang_report' %}" class="nav-link {% if request.resolver_match.url_name == 'jadwal_tayang_report' %}active{% endif %}">
                 <i class="nav-icon bi bi-bar-chart-line"></i>
                 <p>Report Aktif</p>
               </a>
@@ -110,49 +81,42 @@
           </ul>
         </li>
 
-        {% if user.is_superuser or user.groups.all.0.name == "admin" %}
-
-        <li class="nav-header">ADMIN</li>
+        {% if is_admin %}
+        <li class="nav-header text-uppercase text-secondary small fw-bold mt-2">ADMINISTRATION</li>
 
         <li class="nav-item">
-          <a href="{% url 'user_list' %}"
-            class="nav-link {% if request.resolver_match.url_name in 'user_list,user_create,user_edit,user_delete' %}active{% endif %}">
+          <a href="{% url 'user_list' %}" class="nav-link {% if request.resolver_match.url_name in 'user_list,user_create,user_edit,user_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-people"></i>
             <p>User Management</p>
           </a>
         </li>
 
         <li class="nav-item">
-          <a href="{% url 'user_never_login_list' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'user_never_login_list' %}active{% endif %}">
+          <a href="{% url 'user_never_login_list' %}" class="nav-link {% if request.resolver_match.url_name == 'user_never_login_list' %}active{% endif %}">
             <i class="nav-icon bi bi-person-x"></i>
-            <p>User Belum Login</p>
+            <p>Audit Belum Login</p>
           </a>
         </li>
 
         <li class="nav-item">
-          <a href="{% url 'edit_history_list' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'edit_history_list' %}active{% endif %}">
+          <a href="{% url 'edit_history_list' %}" class="nav-link {% if request.resolver_match.url_name == 'edit_history_list' %}active{% endif %}">
             <i class="nav-icon bi bi-clock-history"></i>
-            <p>Edit History</p>
+            <p>Edit History Log</p>
           </a>
         </li>
 
         <li class="nav-item">
-          <a href="{% url 'takeout_alert_rule_list' %}"
-            class="nav-link {% if request.resolver_match.url_name in 'takeout_alert_rule_list,takeout_alert_rule_create,takeout_alert_rule_edit,takeout_alert_rule_delete' %}active{% endif %}">
+          <a href="{% url 'takeout_alert_rule_list' %}" class="nav-link {% if request.resolver_match.url_name in 'takeout_alert_rule_list,takeout_alert_rule_create,takeout_alert_rule_edit,takeout_alert_rule_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-bell-fill"></i>
             <p>Takeout Alert Rules</p>
           </a>
         </li>
 
-        <!-- Master Data (Admin Only) -->
-        <li class="nav-header">MASTER DATA</li>
+        <!-- Master Data Options -->
+        <li class="nav-header text-uppercase text-secondary small fw-bold mt-2">MASTER DATA</li>
 
-        <li
-          class="nav-item {% if request.resolver_match.url_name in 'master_data_list,master_data_create,master_data_edit,master_data_delete' %}menu-open{% endif %}">
-          <a href="#"
-            class="nav-link {% if request.resolver_match.url_name in 'master_data_list,master_data_create,master_data_edit,master_data_delete' %}active{% endif %}">
+        <li class="nav-item {% if request.resolver_match.url_name in 'master_data_list,master_data_create,master_data_edit,master_data_delete' %}menu-open{% endif %}">
+          <a href="#" class="nav-link {% if request.resolver_match.url_name in 'master_data_list,master_data_create,master_data_edit,master_data_delete' %}active{% endif %}">
             <i class="nav-icon bi bi-database-gear"></i>
             <p>
               Options Data
@@ -161,43 +125,43 @@
           </a>
           <ul class="nav nav-treeview">
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'brand-materi' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'brand-materi' %}" class="nav-link {% if slug == 'brand-materi' or request.resolver_match.kwargs.slug == 'brand-materi' %}active{% endif %}">
                 <i class="nav-icon bi bi-tag"></i>
                 <p>Brand</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'lokasi' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'lokasi' %}" class="nav-link {% if slug == 'lokasi' or request.resolver_match.kwargs.slug == 'lokasi' %}active{% endif %}">
                 <i class="nav-icon bi bi-geo-alt"></i>
                 <p>Lokasi</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'dokumentator' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'dokumentator' %}" class="nav-link {% if slug == 'dokumentator' or request.resolver_match.kwargs.slug == 'dokumentator' %}active{% endif %}">
                 <i class="nav-icon bi bi-person-video3"></i>
                 <p>Dokumentator</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'led-type' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'led-type' %}" class="nav-link {% if slug == 'led-type' or request.resolver_match.kwargs.slug == 'led-type' %}active{% endif %}">
                 <i class="nav-icon bi bi-lightbulb"></i>
                 <p>Jenis Produk</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'requirement' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'requirement' %}" class="nav-link {% if slug == 'requirement' or request.resolver_match.kwargs.slug == 'requirement' %}active{% endif %}">
                 <i class="nav-icon bi bi-check2-square"></i>
                 <p>Requirements</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'view-photo' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'view-photo' %}" class="nav-link {% if slug == 'view-photo' or request.resolver_match.kwargs.slug == 'view-photo' %}active{% endif %}">
                 <i class="nav-icon bi bi-camera"></i>
                 <p>View Photo</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'master_data_list' 'camera-type' %}" class="nav-link">
+              <a href="{% url 'master_data_list' 'camera-type' %}" class="nav-link {% if slug == 'camera-type' or request.resolver_match.kwargs.slug == 'camera-type' %}active{% endif %}">
                 <i class="nav-icon bi bi-webcam"></i>
                 <p>Jenis Kamera</p>
               </a>

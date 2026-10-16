@@ -3,15 +3,18 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
     <div>
-        <h3 class="mb-0">Documentation Requests</h3>
-        <p class="text-muted mb-0 small">Manage photo and video documentation requests</p>
+        <h3 class="mb-0 fw-bold">
+            <i class="bi bi-camera-video me-2 text-primary"></i>Documentation Requests
+        </h3>
+        <p class="text-secondary mb-0 small">Kelola permintaan dokumentasi foto dan video LED / OOH</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         {% if is_staff_role or is_admin %}
         <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#exportModal">
-            <i class="bi bi-file-earmark-image me-1"></i> Export Perintah Kerja
+            <i class="bi bi-file-earmark-image me-1"></i> Export SPK
         </button>
         {% endif %}
         {% if can_create_requests %}
@@ -22,27 +25,28 @@
     </div>
 </div>
 
+<!-- Modal Export SPK -->
 {% if is_staff_role or is_admin %}
 <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exportModalLabel">
-                    <i class="bi bi-file-earmark-image me-2"></i>Export Perintah Kerja
+                    <i class="bi bi-file-earmark-image me-2 text-info"></i>Export Perintah Kerja (SPK)
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small mb-3">Pilih tanggal untuk export semua documentation request, dikelompokkan berdasarkan pelaksana/executor.</p>
+                <p class="text-secondary small mb-3">Pilih tanggal untuk export lembar perintah kerja, dikelompokkan berdasarkan teknisi/pelaksana.</p>
                 <div class="mb-3">
-                    <label for="export-date" class="form-label fw-semibold">Tanggal</label>
+                    <label for="export-date" class="form-label fw-semibold">Tanggal Dokumentasi</label>
                     <input type="date" class="form-control" id="export-date" />
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-info" id="btn-open-export">
-                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka Preview & Download
+                <button type="button" class="btn btn-info text-white" id="btn-open-export">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Buka Preview SPK
                 </button>
             </div>
         </div>
@@ -50,15 +54,51 @@
 </div>
 {% endif %}
 
-<div class="card card-primary card-outline">
+<!-- Quick Assign Pelaksana Modal -->
+<div class="modal fade" id="assignPelaksanaModal" tabindex="-1" aria-labelledby="assignModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignModalTitle">
+                    <i class="bi bi-person-check-fill me-2 text-primary"></i>Tugaskan Dokumentator
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label fw-semibold text-secondary small">Lokasi</label>
+                    <div id="assignLokasiName" class="fw-bold fs-6 mb-3 text-light">-</div>
+                </div>
+                <div class="mb-3">
+                    <label for="modalPelaksanaSelect" class="form-label fw-semibold">Pilih Dokumentator / Pelaksana</label>
+                    <select id="modalPelaksanaSelect" class="form-select select2-modal" multiple style="width: 100%;">
+                        {% for dok in all_dokumentators %}
+                        <option value="{{ dok.id }}">{{ dok.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Bisa memilih lebih dari satu pelaksana untuk lokasi ini.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSaveAssignment">
+                    <i class="bi bi-save me-1"></i> Simpan Penugasan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Table Card -->
+<div class="card card-primary card-outline shadow-sm">
     <div class="card-header">
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-            <h3 class="card-title mb-0">
-                <i class="bi bi-list-ul me-2"></i>All Requests
-                <span class="badge bg-secondary ms-2">{{ requests|length }}</span>
+            <h3 class="card-title mb-0 fw-semibold">
+                <i class="bi bi-list-ul me-2 text-primary"></i>All Requests
+                <span class="badge text-bg-secondary ms-2">{{ total_count|default:requests|length }}</span>
             </h3>
             {% if executor_done_toggle %}
-            <div class="btn-group btn-group-sm" role="group" aria-label="Filter request documentation">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Filter status">
                 <a href="{{ executor_active_url }}" class="btn {% if executor_show_done %}btn-outline-secondary{% else %}btn-secondary{% endif %}">
                     Aktif <span class="badge text-bg-light text-dark ms-1">{{ executor_active_count }}</span>
                 </a>
@@ -70,142 +110,149 @@
             {% include "products/_table_search.html" %}
         </div>
     </div>
+
+    <!-- Responsive, Compact 7-Column Table (No Horizontal Overflow) -->
     <div class="card-body p-0 table-responsive">
-        <table class="table table-striped table-hover align-middle mb-0">
-            <thead>
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
                 <tr>
-                    <th style="width:50px">#</th>
-                    <th>Submitted</th>
-                    <th>Brand</th>
-                    <th>Materi</th>
-                    <th>Lokasi</th>
-                    <th>Jenis Produk</th>
-                    <th>Requirements</th>
-                    <th>Jenis Kamera</th>
-                    <th>Tanggal</th>
-                    <th>PIC</th>
-                    <th>Status</th>
-                    <th>Bukti Kerja</th>
-                    {% if can_manage_pelaksana %}
-                    <th>Dokumentator per Lokasi</th>
-                    {% endif %}
-                    <th style="width:140px" class="text-center">Actions</th>
+                    <th style="width:65px">#</th>
+                    <th>Brand &amp; Pemohon</th>
+                    <th>Materi &amp; Lokasi</th>
+                    <th>Spesifikasi &amp; Jadwal</th>
+                    <th style="width:140px">Status</th>
+                    <th>Dokumentator / Pelaksana</th>
+                    <th style="width:120px" class="text-end">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {% for req in requests %}
                 <tr data-id="{{ req.id }}">
-                    <td class="text-muted">{{ req.id }}</td>
-                    <td class="text-muted small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
+                    <!-- 1. # & Waktu -->
                     <td>
-                        <div class="fw-semibold">{{ req.brand|default:"-" }}</div>
-                        <div class="text-muted small">{{ req.submitted_by.get_full_name|default:req.submitted_by.username }}</div>
+                        <div class="fw-bold text-light">#{{ req.id }}</div>
+                        <small class="text-secondary d-block" style="font-size:0.75rem;">{{ req.created_at|date:"d/m/y" }}</small>
                     </td>
+
+                    <!-- 2. Brand & Pemohon (Composite) -->
                     <td>
-                        {% for materi in req.materi_items.all %}
-                        <span class="badge text-bg-secondary">{{ materi.nama_materi }}</span>
-                        {% empty %}
-                        <span class="text-muted small">Belum ada materi</span>
-                        {% endfor %}
+                        <div class="fw-bold fs-6 text-light">{{ req.brand|default:"-" }}</div>
+                        <div class="small text-secondary">
+                            <i class="bi bi-person me-1"></i>{{ req.pic_pemohon|default:req.submitted_by.get_full_name|default:req.submitted_by.username }}
+                        </div>
                     </td>
-                    <td>{{ req.lokasi_display }}</td>
+
+                    <!-- 3. Materi & Lokasi (Composite) -->
                     <td>
-                        {% if req.jenis_led %}
-                        <span class="badge text-bg-warning">{{ req.jenis_led.name }}</span>
-                        {% else %}-{% endif %}
+                        <div class="mb-1">
+                            {% for materi in req.materi_items.all %}
+                            <span class="badge text-bg-secondary me-1 mb-1">{{ materi.nama_materi }}</span>
+                            {% empty %}
+                            <span class="text-secondary small">Belum ada materi</span>
+                            {% endfor %}
+                        </div>
+                        <div class="small text-info">
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ req.lokasi_display }}
+                        </div>
                     </td>
+
+                    <!-- 4. Spesifikasi & Jadwal -->
                     <td>
-                        {% for r in req.requirements.all %}
-                        <span class="badge text-bg-secondary">{{ r.name }}</span>
-                        {% empty %}-{% endfor %}
-                    </td>
-                    <td>
-                        {% for k in req.jenis_kamera.all %}
-                        <span class="badge text-bg-primary">{{ k.name }}</span>
-                        {% empty %}-{% endfor %}
-                    </td>
-                    <td>
-                        <span class="badge text-bg-info">{{ req.tanggal|date:"d M Y" }}</span>
-                    </td>
-                    <td>{{ req.pic_pemohon }}</td>
-                    <td>
-                        {% if is_admin %}
-                        <select class="form-select form-select-sm status-select"
-                                data-url="{% url 'doc_request_update_status' req.id %}"
-                                style="min-width:130px;">
-                            <option value="TODO" {% if req.status == "TODO" %}selected{% endif %}>To Do</option>
-                            <option value="IN_PROGRESS" {% if req.status == "IN_PROGRESS" %}selected{% endif %}>On Progress</option>
-                            <option value="DONE" {% if req.status == "DONE" %}selected{% endif %}>Done</option>
-                        </select>
-                        {% else %}
-                            {% if req.status == "TODO" %}
-                            <span class="badge text-bg-secondary">To Do</span>
-                            {% elif req.status == "IN_PROGRESS" %}
-                            <span class="badge text-bg-warning">On Progress</span>
-                            {% elif req.status == "DONE" %}
-                            <span class="badge text-bg-success">Done</span>
-                            {% endif %}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% for materi in req.materi_items.all %}
-                        <div class="{% if not forloop.last %}mb-1{% endif %}">
-                            <span class="badge text-bg-secondary">{{ materi.nama_materi }}</span>
-                            {% if materi.foto_bukti_kerja %}
-                            <span class="badge text-bg-success">Sudah Upload</span>
-                            {% else %}
-                            <span class="badge text-bg-light text-dark">Belum</span>
+                        <div class="d-flex align-items-center gap-1 mb-1 flex-wrap">
+                            <span class="badge text-bg-info">
+                                <i class="bi bi-calendar-event me-1"></i>{{ req.tanggal|date:"d M Y" }}
+                            </span>
+                            {% if req.jenis_led %}
+                            <span class="badge text-bg-warning text-dark">{{ req.jenis_led.name }}</span>
                             {% endif %}
                         </div>
-                        {% empty %}
-                        <span class="text-muted small">Belum ada materi</span>
-                        {% endfor %}
+                        <small class="text-secondary d-block">
+                            {% if req.requirements.all %}
+                            <i class="bi bi-check2-circle me-1"></i>{{ req.requirements.all|length }} Req
+                            {% endif %}
+                            {% if req.jenis_kamera.all %}
+                            &bull; <i class="bi bi-camera me-1"></i>{{ req.jenis_kamera.all|join:", " }}
+                            {% endif %}
+                        </small>
                     </td>
-                    {% if can_manage_pelaksana %}
-                    <td style="min-width:260px;">
-                        <div class="d-flex flex-column gap-2">
+
+                    <!-- 5. Status & Bukti Kerja -->
+                    <td>
+                        <div>
+                            {% if req.status == "TODO" %}
+                            <span class="badge text-bg-secondary px-2 py-1">To Do</span>
+                            {% elif req.status == "IN_PROGRESS" %}
+                            <span class="badge text-bg-warning text-dark px-2 py-1">On Progress</span>
+                            {% elif req.status == "DONE" %}
+                            <span class="badge text-bg-success px-2 py-1">Done</span>
+                            {% endif %}
+                        </div>
+                        <!-- Mini progress bukti -->
+                        <div class="small text-secondary mt-1">
+                            {% with total_m=req.materi_items.all|length %}
+                            {% if total_m > 0 %}
+                            <i class="bi bi-image me-1"></i>{{ req.materi_items.all|length }} Materi
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </td>
+
+                    <!-- 6. Pelaksana (Badges + Quick Assign Modal Trigger) -->
+                    <td>
+                        <div class="d-flex flex-column gap-1" id="assignment-container-{{ req.id }}">
                             {% for assignment in req.lokasi_assignments.all %}
-                                <select class="lokasi-pelaksana-select" multiple
+                            <div class="d-flex align-items-center justify-content-between p-1 px-2 rounded bg-body-tertiary small mb-1">
+                                <div>
+                                    <span class="text-secondary">{{ assignment.lokasi.name }}:</span>
+                                    <span class="fw-semibold text-light ms-1 assignment-names-{{ assignment.id }}">
+                                        {{ assignment.pelaksana_display }}
+                                    </span>
+                                </div>
+                                {% if can_manage_pelaksana %}
+                                <button type="button" class="btn btn-xs btn-outline-primary ms-2 btn-open-assign"
                                         data-url="{% url 'doc_request_update_lokasi_pelaksana' assignment.id %}"
-                                        style="width:100%;">
-                                    {% for dok in all_dokumentators %}
-                                    <option value="{{ dok.id }}" {% if dok in assignment.pelaksana.all %}selected{% endif %}>{{ dok.name }}</option>
-                                    {% endfor %}
-                                </select>
+                                        data-assignment-id="{{ assignment.id }}"
+                                        data-lokasi="{{ assignment.lokasi.name }}"
+                                        data-pelaksana-ids="{% for p in assignment.pelaksana.all %}{{ p.id }},{% endfor %}"
+                                        title="Ubah Pelaksana">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                             {% empty %}
-                            <span class="text-muted small">Belum ada lokasi.</span>
+                            <span class="text-secondary small">Belum ada penugasan</span>
                             {% endfor %}
                         </div>
                     </td>
-                    {% endif %}
-                    <td class="text-center text-nowrap">
+
+                    <!-- 7. Aksi (Compact) -->
+                    <td class="text-end text-nowrap">
+                        <a href="{% url 'doc_request_detail' req.id %}" class="btn btn-sm btn-info text-white" title="Lihat Detail">
+                            <i class="bi bi-eye"></i>
+                        </a>
                         {% if can_edit_requests %}
-                        <a href="{% url 'doc_request_edit' req.id %}" class="btn btn-sm btn-warning me-1" title="Edit Request">
-                            <i class="bi bi-pencil-fill"></i>
+                        <a href="{% url 'doc_request_edit' req.id %}" class="btn btn-sm btn-warning" title="Edit Request">
+                            <i class="bi bi-pencil"></i>
                         </a>
                         {% endif %}
-                        <a href="{% url 'doc_request_detail' req.id %}" class="btn btn-sm btn-info me-1" title="View Detail">
-                            <i class="bi bi-eye-fill"></i>
-                        </a>
                         {% if can_delete_requests %}
-                        <a href="{% url 'doc_request_delete' req.id %}" class="btn btn-sm btn-danger" title="Delete">
-                            <i class="bi bi-trash-fill"></i>
+                        <a href="{% url 'doc_request_delete' req.id %}" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if can_manage_pelaksana %}14{% else %}13{% endif %}" class="text-center text-muted py-5">
+                    <td colspan="7" class="text-center text-secondary py-5">
                         <i class="bi bi-inbox display-6 d-block mb-2"></i>
                         {% if search_active %}
-                        Tidak ada request yang cocok dengan "{{ search_query }}". <a href="{{ search_reset_url }}">Reset pencarian</a>.
-                        {% elif executor_done_toggle and executor_show_done %}
-                        Belum ada request documentation yang sudah selesai.
-                        {% elif executor_done_toggle %}
-                        Tidak ada request documentation aktif. <a href="{{ executor_done_url }}">Lihat yang sudah selesai</a>.
+                        Tidak ada request yang cocok dengan "{{ search_query }}". <a href="{% url 'doc_request_list' %}">Reset pencarian</a>.
                         {% else %}
-                        No requests yet.{% if can_create_requests %} <a href="{% url 'doc_request_create' %}">Create one now</a>.{% endif %}
+                        Belum ada documentation request.
+                        {% if can_create_requests %}
+                        <a href="{% url 'doc_request_create' %}">Buat request baru sekarang</a>.
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -213,112 +260,94 @@
             </tbody>
         </table>
     </div>
-    {% if requests %}
-    <div class="card-footer text-muted small">
-        Showing {{ requests|length }} request{{ requests|length|pluralize }}{% if executor_done_toggle %} {% if executor_show_done %}yang sudah selesai{% else %}aktif{% endif %}{% endif %}{% if search_active %} for "{{ search_query }}"{% endif %}
-    </div>
-    {% endif %}
+
+    <!-- Pagination Component -->
+    {% include "products/_pagination.html" %}
 </div>
+
+<form id="csrfForm" style="display:none">{% csrf_token %}</form>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', function () {
-      const url = this.dataset.url;
-      const newStatus = this.value;
-      const el = this;
-      el.disabled = true;
+$(function() {
+    // Quick Assign Pelaksana Modal logic
+    const assignModalEl = document.getElementById('assignPelaksanaModal');
+    const assignModal = assignModalEl ? new bootstrap.Modal(assignModalEl) : null;
+    const $modalSelect = $('#modalPelaksanaSelect');
+    let currentPostUrl = '';
+    let currentAssignmentId = '';
 
-      const formData = new FormData();
-      formData.append('status', newStatus);
-      formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}');
+    $modalSelect.select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#assignPelaksanaModal'),
+        placeholder: 'Pilih satu atau lebih dokumentator...',
+        allowClear: true,
+        width: '100%'
+    });
 
-      fetch(url, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData,
-      })
-        .then(r => r.json())
-        .then(data => {
-          el.disabled = false;
-          if (data.success) {
-            el.style.outline = '2px solid #198754';
-            setTimeout(() => { el.style.outline = ''; }, 800);
-          }
+    $('.btn-open-assign').on('click', function() {
+        const $btn = $(this);
+        currentPostUrl = $btn.data('url');
+        currentAssignmentId = $btn.data('assignment-id');
+        const lokasiName = $btn.data('lokasi');
+        const idsStr = ($btn.data('pelaksana-ids') || '').toString();
+        const selectedIds = idsStr.split(',').filter(x => x.trim().length > 0);
+
+        $('#assignLokasiName').text(lokasiName);
+        $modalSelect.val(selectedIds).trigger('change');
+        assignModal.show();
+    });
+
+    $('#btnSaveAssignment').on('click', function() {
+        if (!currentPostUrl) return;
+        const selected = $modalSelect.val() || [];
+        const csrfToken = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]')?.value;
+
+        const formData = new FormData();
+        selected.forEach(id => formData.append('pelaksana[]', id));
+        if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...');
+
+        fetch(currentPostUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData,
         })
-        .catch(() => { el.disabled = false; });
-    });
-  });
-
-  $('.lokasi-pelaksana-select').each(function() {
-    const $el = $(this);
-    $el.select2({
-      theme: 'bootstrap-5',
-      placeholder: 'Pilih dokumentator...',
-      allowClear: true,
-      width: '100%',
-      closeOnSelect: false,
-    });
-
-    $el.on('change', function() {
-      const url = $el.data('url');
-      const selected = $el.val() || [];
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-      const formData = new FormData();
-      selected.forEach(id => formData.append('pelaksana[]', id));
-      formData.append('csrfmiddlewaretoken', csrfToken);
-
-      fetch(url, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData,
-      })
         .then(r => r.json())
         .then(data => {
-          if (data.success) {
-            $el.next('.select2-container').css('outline', '2px solid #198754');
-            setTimeout(() => { $el.next('.select2-container').css('outline', ''); }, 800);
-          }
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> Simpan Penugasan');
+            if (data.success) {
+                // Update text in row
+                $('.assignment-names-' + currentAssignmentId).text(data.pelaksana_display || 'Belum ditentukan');
+                // Update data-pelaksana-ids on the button
+                const newIdsStr = selected.join(',') + (selected.length ? ',' : '');
+                $(`button[data-assignment-id="${currentAssignmentId}"]`).data('pelaksana-ids', newIdsStr);
+                assignModal.hide();
+            } else {
+                alert('Gagal menyimpan penugasan.');
+            }
+        })
+        .catch(() => {
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> Simpan Penugasan');
+            alert('Terjadi kesalahan server saat menyimpan penugasan.');
         });
     });
-  });
-</script>
 
-{% if can_manage_pelaksana %}
-<form style="display:none">{% csrf_token %}</form>
-{% endif %}
-
-{% if is_staff_role or is_admin %}
-<script>
-  (function() {
-    const dateInput = document.getElementById('export-date');
-    if (dateInput) {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      dateInput.value = yyyy + '-' + mm + '-' + dd;
+    // Export SPK Modal logic
+    const exportDateInput = document.getElementById('export-date');
+    if (exportDateInput) {
+        exportDateInput.value = new Date().toISOString().split('T')[0];
+        $('#btn-open-export').on('click', function() {
+            const dateVal = exportDateInput.value;
+            if (dateVal) {
+                window.open("{% url 'doc_request_export_perintah_kerja' %}?date=" + dateVal, '_blank');
+            }
+        });
     }
-
-    const btnExport = document.getElementById('btn-open-export');
-    if (btnExport) {
-      btnExport.addEventListener('click', function() {
-        const date = dateInput.value;
-        if (!date) {
-          alert('Pilih tanggal terlebih dahulu.');
-          return;
-        }
-        const url = "{% url 'doc_request_export_perintah_kerja' %}?date=" + date;
-        window.open(url, '_blank');
-        const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
-        if (modal) modal.hide();
-      });
-    }
-  })();
+});
 </script>
-{% endif %}
-
 {% endblock %}

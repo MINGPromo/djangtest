@@ -3,159 +3,414 @@
 
 {% block extra_css %}
 <style>
-  /* Dashboard custom styles */
   .dash-stat-card {
-    border: none;
-    border-radius: .75rem;
-    transition: transform .15s ease, box-shadow .15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    background: rgba(33, 37, 41, 0.6);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .dash-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.25);
+    transform: translateY(-3px);
+    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.35);
   }
   .dash-stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: .75rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 0.85rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
-  .dash-stat-icon.bg-primary-subtle { color: #6ea8fe; background: rgba(13,110,253,.15) !important; }
-  .dash-stat-icon.bg-warning-subtle { color: #ffda6a; background: rgba(255,193,7,.15) !important; }
-  .dash-stat-icon.bg-success-subtle { color: #75b798; background: rgba(25,135,84,.15) !important; }
-  .dash-stat-icon.bg-danger-subtle  { color: #ea868f; background: rgba(220,53,69,.15) !important; }
+  .dash-stat-icon.bg-primary-subtle { color: #6ea8fe; background: rgba(13, 110, 253, 0.18) !important; }
+  .dash-stat-icon.bg-warning-subtle { color: #ffda6a; background: rgba(255, 193, 7, 0.18) !important; }
+  .dash-stat-icon.bg-success-subtle { color: #75b798; background: rgba(25, 135, 84, 0.18) !important; }
+  .dash-stat-icon.bg-danger-subtle  { color: #ea868f; background: rgba(220, 53, 69, 0.18) !important; }
 
   .dash-stat-card .stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1.2;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
   }
   .dash-stat-card .stat-label {
-    font-size: .8rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
-    letter-spacing: .5px;
-    opacity: .65;
-    margin-top: 2px;
-  }
-  .dash-stat-card .stat-footer {
-    font-size: .78rem;
-    margin-top: .5rem;
-    padding-top: .5rem;
-    border-top: 1px solid rgba(255,255,255,.08);
-  }
-
-  .progress { height: 6px; border-radius: 3px; }
-
-  .status-badge {
-    font-size: .7rem;
-    padding: .25em .6em;
-    border-radius: .35rem;
+    letter-spacing: 0.8px;
+    color: #8b949e;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .3px;
+    margin-top: 0.25rem;
   }
-  .status-todo       { background: rgba(108,117,125,.2); color: #adb5bd; }
-  .status-inprogress { background: rgba(13,110,253,.2);  color: #6ea8fe; }
-  .status-done       { background: rgba(25,135,84,.2);   color: #75b798; }
 
-  .quick-action-btn {
-    border: 1px dashed rgba(255,255,255,.15);
-    border-radius: .75rem;
-    padding: 1.25rem;
+  .quick-action-card {
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 0.85rem;
+    padding: 1rem;
     text-align: center;
-    transition: all .2s ease;
+    transition: all 0.2s ease;
     text-decoration: none;
     color: inherit;
     display: block;
+    background: rgba(255, 255, 255, 0.02);
   }
-  .quick-action-btn:hover {
-    border-color: rgba(13,110,253,.5);
-    background: rgba(13,110,253,.06);
+  .quick-action-card:hover {
+    border-color: #0d6efd;
+    background: rgba(13, 110, 253, 0.08);
     color: #6ea8fe;
+    transform: translateY(-2px);
   }
-  .quick-action-btn i {
+  .quick-action-card i {
     font-size: 1.5rem;
     display: block;
-    margin-bottom: .5rem;
+    margin-bottom: 0.35rem;
   }
 
-  .section-title {
-    font-size: .85rem;
+  .recent-table th {
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: .7px;
-    font-weight: 600;
-    opacity: .5;
-    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    color: #8b949e;
   }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Page Header -->
-<div class="d-flex align-items-center justify-content-between mb-4 pt-3">
+<!-- Header & Welcome -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pt-2">
   <div>
-    <h3 class="mb-1 fw-bold">Dashboard</h3>
-    <p class="text-secondary mb-0 small">Selamat datang, {{ request.user.get_full_name|default:request.user.username }}.</p>
+    <h3 class="fw-bold mb-1">
+      <i class="bi bi-speedometer2 me-2 text-primary"></i>Operational Dashboard
+    </h3>
+    <p class="text-secondary mb-0 small">
+      Selamat datang, <strong class="text-light">{{ request.user.get_full_name|default:request.user.username }}</strong> &bull; {% now "l, d F Y" %}
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'jadwal_tayang_report' %}" class="btn btn-sm btn-outline-info">
+      <i class="bi bi-bar-chart-line me-1"></i> Report Tayang Aktif
+    </a>
+    <a href="{% url 'notification_list' %}" class="btn btn-sm btn-outline-warning">
+      <i class="bi bi-bell me-1"></i> Alert Takeout
+    </a>
   </div>
 </div>
 
-<!-- Quick Actions + Status Breakdown -->
+<!-- Overview Stats Cards -->
 <div class="row g-3 mb-4">
 
-  <!-- Quick Actions -->
-  <div class="col-lg-12">
-    <div class="section-title">Quick Actions</div>
-    <div class="row g-3">
-      {% if can_create_requests %}
-      <div class="col-4">
-        <a href="{% url 'doc_request_create' %}" class="quick-action-btn">
-          <i class="bi bi-plus-circle"></i>
-          <span class="small fw-semibold">New Doc Request</span>
-        </a>
+  <!-- Doc Requests Total -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card dash-stat-card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="stat-label">Documentation</div>
+          <div class="dash-stat-icon bg-primary-subtle">
+            <i class="bi bi-camera-video"></i>
+          </div>
+        </div>
+        <div class="stat-value text-primary mb-2">{{ total_requests }}</div>
+        <div class="d-flex gap-2 small text-secondary">
+          <span class="badge text-bg-secondary"><i class="bi bi-clock me-1"></i>{{ doc_todo }} To Do</span>
+          <span class="badge text-bg-warning"><i class="bi bi-hourglass-split me-1"></i>{{ doc_progress }} On Prog</span>
+          <span class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>{{ doc_done }} Done</span>
+        </div>
       </div>
-      <div class="col-4">
-        <a href="{% url 'maint_request_create' %}" class="quick-action-btn">
-          <i class="bi bi-plus-circle"></i>
-          <span class="small fw-semibold">New Maintenance</span>
-        </a>
+    </div>
+  </div>
+
+  <!-- Maintenance Total -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card dash-stat-card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="stat-label">Maintenance LED</div>
+          <div class="dash-stat-icon bg-warning-subtle">
+            <i class="bi bi-tools"></i>
+          </div>
+        </div>
+        <div class="stat-value text-warning mb-2">{{ total_maint }}</div>
+        <div class="d-flex gap-2 small text-secondary">
+          <span class="badge text-bg-secondary"><i class="bi bi-clock me-1"></i>{{ maint_todo }} To Do</span>
+          <span class="badge text-bg-warning"><i class="bi bi-hourglass-split me-1"></i>{{ maint_progress }} On Prog</span>
+          <span class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>{{ maint_done }} Done</span>
+        </div>
       </div>
-      <div class="col-4">
-        <a href="{% url 'jadwal_tayang_create' %}" class="quick-action-btn">
-          <i class="bi bi-plus-circle"></i>
-          <span class="small fw-semibold">New Jadwal Tayang</span>
-        </a>
+    </div>
+  </div>
+
+  <!-- Jadwal Tayang Total -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card dash-stat-card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="stat-label">Jadwal Tayang</div>
+          <div class="dash-stat-icon bg-success-subtle">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+        </div>
+        <div class="stat-value text-success mb-2">{{ total_jt }}</div>
+        <div class="d-flex gap-2 small text-secondary">
+          <span class="badge text-bg-secondary">{{ jt_todo }} Belum</span>
+          <span class="badge text-bg-info">{{ jt_progress }} Sedang</span>
+          <span class="badge text-bg-success">{{ jt_done }} Takeout</span>
+        </div>
       </div>
-      {% endif %}
-      <div class="col-4">
-        <a href="{% url 'doc_request_list' %}" class="quick-action-btn">
-          <i class="bi bi-list-ul"></i>
-          <span class="small fw-semibold">All doc request</span>
-        </a>
-      </div>
-      <div class="col-4">
-        <a href="{% url 'maint_request_list' %}" class="quick-action-btn">
-          <i class="bi bi-list-ul"></i>
-          <span class="small fw-semibold">All maintenance</span>
-        </a>
-      </div>
-      <div class="col-4">
-        <a href="{% url 'jadwal_tayang_list' %}" class="quick-action-btn">
-          <i class="bi bi-list-ul"></i>
-          <span class="small fw-semibold">All Jadwal Tayang</span>
-        </a>
+    </div>
+  </div>
+
+  <!-- Total Pekerjaan Aktif -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card dash-stat-card h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="stat-label">Antrean Aktif</div>
+          <div class="dash-stat-icon bg-danger-subtle">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+        </div>
+        <div class="stat-value text-danger mb-2">{{ doc_todo|add:doc_progress|add:maint_todo|add:maint_progress }}</div>
+        <div class="text-secondary small">
+          Tiket dokumentasi &amp; perbaikan yang membutuhkan tindakan.
+        </div>
       </div>
     </div>
   </div>
 
 </div>
-<!-- Empty state -->
-{% if total_requests == 0 and total_maint == 0 and total_jt == 0 %}
-<div class="alert alert-secondary border-0" style="border-radius:.75rem;">
-  <i class="bi bi-info-circle me-2"></i> Belum ada request. Mulai dengan membuat request baru menggunakan Quick Actions di atas.
+
+<!-- Quick Actions Row -->
+<div class="card card-primary card-outline mb-4">
+  <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+    <h6 class="card-title mb-0 small fw-bold text-uppercase text-secondary tracking-wide">
+      <i class="bi bi-lightning-charge me-1 text-primary"></i>Aksi Cepat (Quick Actions)
+    </h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% if can_create_requests %}
+      <div class="col-6 col-md-3">
+        <a href="{% url 'doc_request_create' %}" class="quick-action-card">
+          <i class="bi bi-plus-circle text-primary"></i>
+          <span class="small fw-semibold d-block">New Doc Request</span>
+        </a>
+      </div>
+      <div class="col-6 col-md-3">
+        <a href="{% url 'maint_request_create' %}" class="quick-action-card">
+          <i class="bi bi-tools text-warning"></i>
+          <span class="small fw-semibold d-block">New Maintenance</span>
+        </a>
+      </div>
+      <div class="col-6 col-md-3">
+        <a href="{% url 'jadwal_tayang_create' %}" class="quick-action-card">
+          <i class="bi bi-calendar-plus text-success"></i>
+          <span class="small fw-semibold d-block">New Jadwal Tayang</span>
+        </a>
+      </div>
+      {% endif %}
+      <div class="col-6 col-md-{% if can_create_requests %}3{% else %}4{% endif %}">
+        <a href="{% url 'doc_request_list' %}" class="quick-action-card">
+          <i class="bi bi-camera-video text-info"></i>
+          <span class="small fw-semibold d-block">Daftar Dokumentasi</span>
+        </a>
+      </div>
+      <div class="col-6 col-md-{% if can_create_requests %}3{% else %}4{% endif %}">
+        <a href="{% url 'maint_request_list' %}" class="quick-action-card">
+          <i class="bi bi-wrench-adjustable text-danger"></i>
+          <span class="small fw-semibold d-block">Daftar Maintenance</span>
+        </a>
+      </div>
+      <div class="col-6 col-md-{% if can_create_requests %}3{% else %}4{% endif %}">
+        <a href="{% url 'jadwal_tayang_list' %}" class="quick-action-card">
+          <i class="bi bi-display text-primary"></i>
+          <span class="small fw-semibold d-block">Daftar Jadwal Tayang</span>
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
-{% endif %}
+
+<!-- Recent Activities Grid -->
+<div class="row g-3">
+
+  <!-- Recent Documentation Requests -->
+  <div class="col-lg-6">
+    <div class="card card-primary card-outline h-100 shadow-sm">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h6 class="card-title mb-0 fw-semibold">
+          <i class="bi bi-camera-video me-2 text-primary"></i>Dokumentasi Terbaru
+        </h6>
+        <a href="{% url 'doc_request_list' %}" class="small text-decoration-none">
+          Lihat Semua <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+      <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0 recent-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Brand &amp; Materi</th>
+              <th>Lokasi</th>
+              <th>Status</th>
+              <th class="text-end">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doc in recent_docs %}
+            <tr>
+              <td class="text-secondary small">{{ doc.id }}</td>
+              <td>
+                <div class="fw-semibold text-light">{{ doc.brand|default:"-" }}</div>
+                <small class="text-secondary">{{ doc.materi_display|truncatechars:35 }}</small>
+              </td>
+              <td class="small text-secondary">{{ doc.lokasi_display|truncatechars:25 }}</td>
+              <td>
+                {% if doc.status == 'TODO' %}
+                <span class="badge text-bg-secondary">To Do</span>
+                {% elif doc.status == 'IN_PROGRESS' %}
+                <span class="badge text-bg-warning">On Progress</span>
+                {% else %}
+                <span class="badge text-bg-success">Done</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'doc_request_detail' doc.id %}" class="btn btn-xs btn-outline-info" title="Lihat Detail">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-secondary py-4 small">
+                <i class="bi bi-inbox d-block fs-3 mb-1"></i>Belum ada request dokumentasi.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Maintenance Requests -->
+  <div class="col-lg-6">
+    <div class="card card-danger card-outline h-100 shadow-sm">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h6 class="card-title mb-0 fw-semibold">
+          <i class="bi bi-tools me-2 text-danger"></i>Maintenance LED Terbaru
+        </h6>
+        <a href="{% url 'maint_request_list' %}" class="small text-decoration-none text-danger">
+          Lihat Semua <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+      <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0 recent-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Pemohon &amp; Brand</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th class="text-end">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in recent_maints %}
+            <tr>
+              <td class="text-secondary small">{{ m.id }}</td>
+              <td>
+                <div class="fw-semibold text-light">{{ m.nama_pemohon }}</div>
+                <small class="text-secondary">{{ m.brand|default:"Maintenance Umum" }}</small>
+              </td>
+              <td class="small">
+                <span class="badge text-bg-secondary">{{ m.tanggal_deadline|date:"d M Y" }}</span>
+              </td>
+              <td>
+                {% if m.status == 'TODO' %}
+                <span class="badge text-bg-secondary">To Do</span>
+                {% elif m.status == 'IN_PROGRESS' %}
+                <span class="badge text-bg-warning">On Progress</span>
+                {% else %}
+                <span class="badge text-bg-success">Done</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'maint_request_detail' m.id %}" class="btn btn-xs btn-outline-danger" title="Lihat Detail">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-secondary py-4 small">
+                <i class="bi bi-inbox d-block fs-3 mb-1"></i>Belum ada tiket maintenance.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Jadwal Tayang -->
+  <div class="col-12 mt-3">
+    <div class="card card-success card-outline shadow-sm">
+      <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+        <h6 class="card-title mb-0 fw-semibold">
+          <i class="bi bi-calendar-event me-2 text-success"></i>Jadwal Tayang Terbaru
+        </h6>
+        <a href="{% url 'jadwal_tayang_list' %}" class="small text-decoration-none text-success">
+          Lihat Semua Jadwal <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+      <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0 recent-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Brand &amp; Materi</th>
+              <th>Lokasi</th>
+              <th>Jadwal Mulai</th>
+              <th>Batas Takeout</th>
+              <th>Status</th>
+              <th class="text-end">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for jt in recent_jt %}
+            <tr>
+              <td class="text-secondary small">{{ jt.id }}</td>
+              <td>
+                <div class="fw-semibold text-light">{{ jt.brand|default:"-" }}</div>
+                <small class="text-secondary">{{ jt.materi_display|truncatechars:40 }}</small>
+              </td>
+              <td class="small text-secondary">{{ jt.lokasi_display|truncatechars:30 }}</td>
+              <td class="small">{{ jt.tanggal_tayang|date:"d M Y H:i" }}</td>
+              <td class="small text-warning fw-semibold">{{ jt.tanggal_takeout|date:"d M Y H:i" }}</td>
+              <td>
+                <span class="badge text-bg-{{ jt.status_badge_class }}">{{ jt.get_status_display }}</span>
+              </td>
+              <td class="text-end">
+                <a href="{% url 'jadwal_tayang_detail' jt.id %}" class="btn btn-xs btn-outline-success" title="Lihat Detail">
+                  <i class="bi bi-eye"></i> Detail
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-secondary py-4 small">
+                <i class="bi bi-inbox d-block fs-3 mb-1"></i>Belum ada jadwal tayang.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 {% endblock %}

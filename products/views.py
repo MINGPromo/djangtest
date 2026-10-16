@@ -777,8 +777,14 @@ def doc_request_list(request):
             | Q(submitted_by__last_name__icontains=search_query)
         ).distinct()
     requests, done_toggle_context = _executor_done_toggle_context(request, requests)
+    total_count = requests.count() if hasattr(requests, "count") else len(requests)
+    paginator = Paginator(requests, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "products/request_list.html", {
-        "requests": requests,
+        "requests": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
         "all_dokumentators": _assignable_dokumentators_queryset(),
         "can_create_requests": _is_requester(request.user) or _is_admin(request.user),
         "can_edit_requests": _can_access_request_edit(request.user),
@@ -1613,8 +1619,14 @@ def maint_request_list(request):
             | Q(pelaksana__name__icontains=search_query)
         ).distinct()
     requests_qs, done_toggle_context = _executor_done_toggle_context(request, requests_qs)
+    total_count = requests_qs.count() if hasattr(requests_qs, "count") else len(requests_qs)
+    paginator = Paginator(requests_qs, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     return render(request, "products/maint_request_list.html", {
-        "requests": requests_qs,
+        "requests": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
         "all_dokumentators": _assignable_dokumentators_queryset(),
         "can_create_requests": _is_requester(request.user) or _is_admin(request.user),
         "can_edit_requests": _can_access_request_edit(request.user),
@@ -1820,12 +1832,17 @@ def jadwal_tayang_list(request):
             | Q(submitted_by__last_name__icontains=search_query)
             | Q(pelaksana__name__icontains=search_query)
         ).distinct()
+    total_count = qs.count() if hasattr(qs, "count") else len(qs)
+    paginator = Paginator(qs, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     now = timezone.now()
-    requests = list(qs)
-    for req in requests:
+    for req in page_obj:
         req.photo_status_info = _jadwal_tayang_photo_status_info(req, now)
     return render(request, "products/jadwal_tayang_list.html", {
-        "requests": requests,
+        "requests": page_obj,
+        "page_obj": page_obj,
+        "total_count": total_count,
         "all_dokumentators": _assignable_dokumentators_queryset(),
         "can_delete_requests": _can_delete_request_record(request.user, None),
         "is_requester": _is_requester(request.user),

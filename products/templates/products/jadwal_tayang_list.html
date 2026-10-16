@@ -3,14 +3,17 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
     <div>
-        <h3 class="mb-0">Jadwal Tayang</h3>
-        <p class="text-muted mb-0 small">Kelola jadwal tayang dan takeout materi</p>
+        <h3 class="mb-0 fw-bold">
+            <i class="bi bi-calendar-event me-2 text-success"></i>Jadwal Tayang &amp; Takeout
+        </h3>
+        <p class="text-secondary mb-0 small">Kelola jadwal penayangan iklan LED, playlist CMS, dan waktu penurunan materi</p>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{% url 'jadwal_tayang_report' %}" class="btn btn-outline-primary">
-            <i class="bi bi-bar-chart-line me-1"></i> Report Aktif
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'jadwal_tayang_report' %}" class="btn btn-outline-info">
+            <i class="bi bi-bar-chart-line me-1"></i> Report Tayang Aktif
         </a>
         {% if is_requester or is_admin %}
         <a href="{% url 'jadwal_tayang_create' %}" class="btn btn-success">
@@ -20,107 +23,181 @@
     </div>
 </div>
 
-<div class="card card-success card-outline">
+<!-- Quick Assign Pelaksana Modal -->
+<div class="modal fade" id="assignJadwalModal" tabindex="-1" aria-labelledby="assignJadwalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignJadwalTitle">
+                    <i class="bi bi-person-check me-2 text-success"></i>Tugaskan Pelaksana Jadwal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label fw-semibold text-secondary small">Jadwal / Brand</label>
+                    <div id="assignJadwalBrand" class="fw-bold fs-6 mb-3 text-light">-</div>
+                </div>
+                <div class="mb-3">
+                    <label for="modalJadwalPelaksanaSelect" class="form-label fw-semibold">Pilih Pelaksana / Dokumentator</label>
+                    <select id="modalJadwalPelaksanaSelect" class="form-select select2-modal" multiple style="width: 100%;">
+                        {% for dok in all_dokumentators %}
+                        <option value="{{ dok.id }}">{{ dok.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Bisa memilih lebih dari satu pelaksana.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" id="btnSaveJadwalPelaksana">
+                    <i class="bi bi-save me-1"></i> Simpan Penugasan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Table Card -->
+<div class="card card-success card-outline shadow-sm">
     <div class="card-header">
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-            <h3 class="card-title mb-0">
-                <i class="bi bi-calendar-event me-2"></i>All Jadwal Tayang
-                <span class="badge bg-secondary ms-2">{{ requests|length }}</span>
+            <h3 class="card-title mb-0 fw-semibold">
+                <i class="bi bi-list-ul me-2 text-success"></i>All Jadwal Tayang
+                <span class="badge text-bg-secondary ms-2">{{ total_count|default:requests|length }}</span>
             </h3>
             {% include "products/_table_search.html" %}
         </div>
     </div>
+
+    <!-- Responsive, Compact 7-Column Table -->
     <div class="card-body p-0 table-responsive">
-        <table class="table table-striped table-hover align-middle mb-0">
-            <thead>
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
                 <tr>
-                    <th style="width:50px">#</th>
-                    <th>Submitted</th>
-                    <th>Brand</th>
-                    <th>Materi</th>
-                    <th>Lokasi</th>
-                    <th>Jenis Produk</th>
-                    <th>Tgl Tayang</th>
-                    <th>Tgl Takeout</th>
-                    <th>PIC</th>
-                    <th>Status</th>
-                    {% if can_manage_pelaksana %}
+                    <th style="width:65px">#</th>
+                    <th>Brand &amp; Pemohon</th>
+                    <th>Materi &amp; Lokasi</th>
+                    <th>Periode Penayangan</th>
+                    <th style="width:160px">Status Penayangan</th>
                     <th>Pelaksana</th>
-                    {% endif %}
-                    <th style="width:180px" class="text-center">Actions</th>
+                    <th style="width:120px" class="text-end">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {% for req in requests %}
                 <tr data-id="{{ req.id }}">
-                    <td class="text-muted">{{ req.id }}</td>
-                    <td class="text-muted small">{{ req.created_at|date:"d/m/Y H:i" }}</td>
+                    <!-- 1. # & Waktu -->
                     <td>
-                        <div class="fw-semibold">{{ req.brand|default:"-" }}</div>
-                        <div class="text-muted small">{{ req.submitted_by.get_full_name|default:req.submitted_by.username }}</div>
+                        <div class="fw-bold text-light">#{{ req.id }}</div>
+                        <small class="text-secondary d-block" style="font-size:0.75rem;">{{ req.created_at|date:"d/m/y" }}</small>
                     </td>
+
+                    <!-- 2. Brand & Pemohon (Composite) -->
                     <td>
-                        {% for materi in req.materi_items.all %}
-                        <div class="{% if not forloop.last %}mb-1{% endif %}">
-                            <span class="badge text-bg-secondary">{{ materi.nama_materi }}</span>
-                            <span class="badge text-bg-{{ materi.status_badge_class }}">{{ materi.get_status_display }}</span>
+                        <div class="fw-bold fs-6 text-light">{{ req.brand|default:"-" }}</div>
+                        <div class="small text-secondary">
+                            <i class="bi bi-person me-1"></i>{% if req.pic_pemohon %}{{ req.pic_pemohon }} <span class="text-secondary opacity-75">({{ req.submitted_by.get_full_name|default:req.submitted_by.username }})</span>{% else %}{{ req.submitted_by.get_full_name|default:req.submitted_by.username }}{% endif %}
                         </div>
-                        {% empty %}
-                        <span class="text-muted small">Belum ada materi</span>
-                        {% endfor %}
                     </td>
-                    <td>{{ req.lokasi_display }}</td>
+
+                    <!-- 3. Materi & Lokasi (Composite) -->
                     <td>
-                        {% if req.jenis_led %}
-                        <span class="badge text-bg-warning">{{ req.jenis_led.name }}</span>
-                        {% else %}-{% endif %}
-                    </td>
-                    <td class="small">{{ req.tanggal_tayang|date:"d M Y H:i" }}</td>
-                    <td class="small">{{ req.tanggal_takeout|date:"d M Y H:i" }}</td>
-                    <td>{{ req.pic_pemohon }}</td>
-                    <td>
-                        <span class="badge text-bg-{{ req.status_badge_class }}">{{ req.get_status_display }}</span>
-                        <div class="text-muted small mt-1">Status parent</div>
-                        <span class="badge text-bg-{{ req.photo_status_info.badge_class }}">{{ req.photo_status_info.label }}</span>
-                        <div class="text-muted small mt-1">{{ req.photo_status_info.detail }}</div>
-                    </td>
-                    {% if can_manage_pelaksana %}
-                    <td>
-                        <select class="pelaksana-select" multiple
-                                data-url="{% url 'jadwal_tayang_update_pelaksana' req.id %}"
-                                style="min-width:180px;">
-                            {% for dok in all_dokumentators %}
-                            <option value="{{ dok.id }}" {% if dok in req.pelaksana.all %}selected{% endif %}>{{ dok.name }}</option>
+                        <div class="mb-1">
+                            {% for materi in req.materi_items.all %}
+                            <div class="d-inline-flex align-items-center gap-1 me-1 mb-1">
+                                <span class="badge text-bg-secondary">{{ materi.nama_materi }}</span>
+                                <span class="badge text-bg-{{ materi.status_badge_class }}" style="font-size:0.68rem;">{{ materi.get_status_display }}</span>
+                            </div>
+                            {% empty %}
+                            <span class="text-secondary small">Belum ada materi</span>
                             {% endfor %}
-                        </select>
+                        </div>
+                        <div class="small text-success">
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ req.lokasi_display }}
+                        </div>
                     </td>
-                    {% endif %}
-                    <td class="text-center text-nowrap">
-                        <a href="{% url 'jadwal_tayang_detail' req.id %}" class="btn btn-sm btn-info me-1" title="View Detail">
-                            <i class="bi bi-eye-fill"></i>
+
+                    <!-- 4. Periode Penayangan (Composite) -->
+                    <td>
+                        <div class="small text-secondary">
+                            <i class="bi bi-play-circle text-success me-1"></i>Tayang: <strong class="text-light">{{ req.tanggal_tayang|date:"d M Y H:i" }}</strong>
+                        </div>
+                        <div class="small text-warning fw-semibold mt-1">
+                            <i class="bi bi-stop-circle me-1"></i>Takeout: {{ req.tanggal_takeout|date:"d M Y H:i" }}
+                        </div>
+                        {% if req.jenis_led %}
+                        <div class="mt-1">
+                            <span class="badge text-bg-warning text-dark">{{ req.jenis_led.name }}</span>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- 5. Status Penayangan (Cleaned from debug jargon) -->
+                    <td>
+                        <div>
+                            <span class="badge text-bg-{{ req.status_badge_class }} px-2 py-1 fs-7">
+                                {{ req.get_status_display }}
+                            </span>
+                        </div>
+                        {% if req.photo_status_info %}
+                        <div class="mt-1">
+                            <span class="badge text-bg-{{ req.photo_status_info.badge_class }}">{{ req.photo_status_info.label }}</span>
+                            <div class="text-secondary small" style="font-size:0.72rem;">{{ req.photo_status_info.detail }}</div>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- 6. Pelaksana -->
+                    <td>
+                        <div class="d-flex align-items-center justify-content-between p-1 px-2 rounded bg-body-tertiary small">
+                            <span class="fw-semibold text-light jadwal-pelaksana-{{ req.id }}">
+                                {% if req.pelaksana.all %}
+                                {{ req.pelaksana.all|join:", " }}
+                                {% else %}
+                                <span class="text-secondary">Belum ditentukan</span>
+                                {% endif %}
+                            </span>
+                            {% if can_manage_pelaksana %}
+                            <button type="button" class="btn btn-xs btn-outline-success ms-2 btn-open-assign-jadwal"
+                                    data-url="{% url 'jadwal_tayang_update_pelaksana' req.id %}"
+                                    data-req-id="{{ req.id }}"
+                                    data-brand="{{ req.brand|default:'Jadwal' }} - {{ req.lokasi_display }}"
+                                    data-pelaksana-ids="{% for p in req.pelaksana.all %}{{ p.id }},{% endfor %}"
+                                    title="Ubah Pelaksana">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <!-- 7. Aksi -->
+                    <td class="text-end text-nowrap">
+                        <a href="{% url 'jadwal_tayang_detail' req.id %}" class="btn btn-sm btn-info text-white" title="Lihat Detail">
+                            <i class="bi bi-eye"></i>
                         </a>
                         {% if is_admin or is_requester %}
-                        <a href="{% url 'jadwal_tayang_edit' req.id %}" class="btn btn-sm btn-warning me-1" title="Edit">
-                            <i class="bi bi-pencil-fill"></i>
+                        <a href="{% url 'jadwal_tayang_edit' req.id %}" class="btn btn-sm btn-warning" title="Edit">
+                            <i class="bi bi-pencil"></i>
                         </a>
                         {% endif %}
                         {% if can_delete_requests %}
-                        <a href="{% url 'jadwal_tayang_delete' req.id %}" class="btn btn-sm btn-danger" title="Delete">
-                            <i class="bi bi-trash-fill"></i>
+                        <a href="{% url 'jadwal_tayang_delete' req.id %}" class="btn btn-sm btn-outline-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if can_manage_pelaksana %}12{% else %}11{% endif %}" class="text-center text-muted py-5">
+                    <td colspan="7" class="text-center text-secondary py-5">
                         <i class="bi bi-inbox display-6 d-block mb-2"></i>
                         {% if search_active %}
                         Tidak ada jadwal tayang yang cocok dengan "{{ search_query }}". <a href="{% url 'jadwal_tayang_list' %}">Reset pencarian</a>.
                         {% else %}
-                        No jadwal tayang yet.
+                        Belum ada jadwal tayang.
                         {% if is_requester or is_admin %}
-                        <a href="{% url 'jadwal_tayang_create' %}">Create one now</a>.
+                        <a href="{% url 'jadwal_tayang_create' %}">Buat jadwal tayang baru sekarang</a>.
                         {% endif %}
                         {% endif %}
                     </td>
@@ -129,54 +206,79 @@
             </tbody>
         </table>
     </div>
-    {% if requests %}
-    <div class="card-footer text-muted small">
-        Showing {{ requests|length }} item{{ requests|length|pluralize }}{% if search_active %} for "{{ search_query }}"{% endif %}
-    </div>
-    {% endif %}
+
+    <!-- Pagination Component -->
+    {% include "products/_pagination.html" %}
 </div>
+
+<form id="csrfFormJadwal" style="display:none">{% csrf_token %}</form>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  $('.pelaksana-select').each(function() {
-    const $el = $(this);
-    $el.select2({
-      theme: 'bootstrap-5',
-      placeholder: 'Pilih pelaksana...',
-      allowClear: true,
-      width: '100%',
-      closeOnSelect: false,
+$(function() {
+    const modalEl = document.getElementById('assignJadwalModal');
+    const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+    const $select = $('#modalJadwalPelaksanaSelect');
+    let currentUrl = '';
+    let currentReqId = '';
+
+    $select.select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#assignJadwalModal'),
+        placeholder: 'Pilih pelaksana tayang...',
+        allowClear: true,
+        width: '100%'
     });
 
-    $el.on('change', function() {
-      const url = $el.data('url');
-      const selected = $el.val() || [];
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    $('.btn-open-assign-jadwal').on('click', function() {
+        const $btn = $(this);
+        currentUrl = $btn.data('url');
+        currentReqId = $btn.data('req-id');
+        const brand = $btn.data('brand');
+        const idsStr = ($btn.data('pelaksana-ids') || '').toString();
+        const selectedIds = idsStr.split(',').filter(x => x.trim().length > 0);
 
-      const formData = new FormData();
-      selected.forEach(id => formData.append('pelaksana[]', id));
-      formData.append('csrfmiddlewaretoken', csrfToken);
+        $('#assignJadwalBrand').text(brand);
+        $select.val(selectedIds).trigger('change');
+        modal.show();
+    });
 
-      fetch(url, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData,
-      })
+    $('#btnSaveJadwalPelaksana').on('click', function() {
+        if (!currentUrl) return;
+        const selected = $select.val() || [];
+        const csrfToken = document.querySelector('#csrfFormJadwal [name=csrfmiddlewaretoken]')?.value;
+
+        const formData = new FormData();
+        selected.forEach(id => formData.append('pelaksana[]', id));
+        if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...');
+
+        fetch(currentUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData,
+        })
         .then(r => r.json())
         .then(data => {
-          if (data.success) {
-            $el.next('.select2-container').css('outline', '2px solid #198754');
-            setTimeout(() => { $el.next('.select2-container').css('outline', ''); }, 800);
-          }
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> Simpan Penugasan');
+            if (data.success) {
+                $('.jadwal-pelaksana-' + currentReqId).text(data.pelaksana_display || 'Belum ditentukan');
+                const newIdsStr = selected.join(',') + (selected.length ? ',' : '');
+                $(`button[data-req-id="${currentReqId}"]`).data('pelaksana-ids', newIdsStr);
+                modal.hide();
+            } else {
+                alert('Gagal menyimpan penugasan pelaksana.');
+            }
+        })
+        .catch(() => {
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> Simpan Penugasan');
+            alert('Terjadi kesalahan server saat menyimpan penugasan.');
         });
     });
-  });
+});
 </script>
-
-{% if can_manage_pelaksana %}
-<form style="display:none">{% csrf_token %}</form>
-{% endif %}
-
 {% endblock %}

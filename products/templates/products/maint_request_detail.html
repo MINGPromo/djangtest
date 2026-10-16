@@ -87,8 +87,8 @@
                             <th class="bg-body-secondary">Foto Kerusakan</th>
                             <td>
                                 {% if req.foto_kerusakan %}
-                                <a href="{{ req.foto_kerusakan.url }}" target="_blank">
-                                    <img src="{{ req.foto_kerusakan.url }}" alt="Foto Kerusakan" class="img-fluid rounded" style="max-height: 320px;">
+                                <a href="{{ req.foto_kerusakan.url }}">
+                                    <img src="{{ req.foto_kerusakan.url }}" alt="Foto Kerusakan" class="img-fluid rounded img-lightbox-trigger shadow-sm" style="max-height: 320px;" title="Klik untuk zoom">
                                 </a>
                                 {% else %}
                                 -
@@ -125,8 +125,8 @@
                                     <div class="border rounded p-2">
                                         <div class="fw-semibold mb-2">{{ materi.nama_materi }}</div>
                                         {% if materi.foto_bukti_kerja %}
-                                        <a href="{{ materi.foto_bukti_kerja.url }}" target="_blank" class="text-decoration-none">
-                                            <img src="{{ materi.foto_bukti_kerja.url }}" alt="Foto Bukti Kerja {{ materi.nama_materi }}" class="img-fluid rounded" style="max-height: 220px;">
+                                        <a href="{{ materi.foto_bukti_kerja.url }}" class="text-decoration-none">
+                                            <img src="{{ materi.foto_bukti_kerja.url }}" alt="Foto Bukti Kerja {{ materi.nama_materi }}" class="img-fluid rounded img-lightbox-trigger shadow-sm" style="max-height: 220px;" title="Klik untuk zoom">
                                         </a>
                                         {% else %}
                                         <span class="text-muted small">Belum upload</span>
